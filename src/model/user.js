@@ -10,4 +10,4 @@ const user_scema = new mongoose.Schema({
 })
 const User = mongoose.model("User", user_scema)
 
-module.exports={User}
+module.exports=User

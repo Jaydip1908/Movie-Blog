@@ -1,4 +1,4 @@
-const {User} = require("../model/user");
+const User = require("../model/user");
 
 
     const loginuser = async (req, res) => {
@@ -8,6 +8,13 @@ const {User} = require("../model/user");
 
         if (user) {
             if (user.password === password) {
+
+             
+                req.session.user={
+                    id:user._id
+                }
+                console.log(req.session.user)
+
                 res.status(200).json({
                     msg: "User Logeed In Successfully"
                 })
@@ -26,8 +33,13 @@ const {User} = require("../model/user");
 
 
 const logoutuser = (req, res) => {
-   res.status(400).send({
-        msg:"user is logged out"
+    req.session.destroy(function(err){
+        console.log("session destroy")
+        console.error(err)
+    })
+
+   res.status(200).send({
+        msg:"user is logged out succesfully"
     })
 }
 const registeruser =async (req, res) => {
