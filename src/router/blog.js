@@ -7,5 +7,8 @@ const upload=require('../middleware/multerImg')
 
 const blogRoute=express.Router();
 blogRoute.post('/create',sessionAuth,upload.single("photo"),createBlog)
+blogRoute.put('/create:BloaId',sessionAuth,upload.single("photo"),updateBlog)
+blogRoute.delete('/create:BlogId',sessionAuth,upload.single("photo"),deleteBlog)
+
 
 module.exports=blogRoute
