@@ -1,6 +1,6 @@
 const express = require("express");
 const {getData,getSingleData,createData,upadateData,deleteData}=require("../contoler/movie")
-const sessionAuth=require("../middleware/sessionAuth")
+const {sessionAuth}=require("../middleware/sessionAuth")
 
 
 const usermovie=express.Router();

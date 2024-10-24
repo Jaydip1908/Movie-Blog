@@ -1,21 +1,23 @@
-// const Blog=require('../model/bolg');
-// const fs=require('fs');
-// const path = require('path');
 const Blog = require('../model/bolg'); // Fixed typo: 'bolg' to 'blog'
 const fs = require('fs');
 const path = require('path');
-const blogRoute = require('../router/blog');
+// const { populate } = require('../model/user');
+const mongoose = require('mongoose');
+const { populate } = require('../model/user');
+const User = require('../model/user');
+// const {tokenAuth}=require('../middleware/sessionAuth')
 
-// const mongoose = require('mongoose');
+
 
 const createBlog=async(req,res)=>{
         const {title,content}=req.body;
-        const user_id=req.session.user["id"]
+        const user_id=req.user["id"]
 
         // console.log(title)
         // console.log(content)
         // console.log(user_id)
         // console.log(req.file.filename)
+        
 
         let filename;
         if(req.file){
@@ -33,20 +35,47 @@ const createBlog=async(req,res)=>{
 }
 
 const getBlog=async(req,res)=>{
+
+    const page = Number(req.query["page"]) || 1;
+    const dataLimit = Number(req.query["limit"]) || 2;
+    const skipCount = (page - 1) * dataLimit;
+    const totalData = await Blog.countDocuments()
+    const totalPages = Math.ceil(totalData / dataLimit)
     try{
-        let allData=await Blog.find();
-        res.send(allData);
+    let allData=await Blog.find().skip(skipCount).limit(dataLimit).populate("user");
+    res.send(allData,);
+    req.json({
+        page: page,
+        limit: dataLimit,
+        total: totalData,
+        // movies: movies,
+        totalPages: totalPages
+    })
     }catch(error){
-        res.send(error.message);
     }
+    console.log(getBlog)
 }
 
-const getsingleBlog=async(req,res)=>{
-    try{
-        let id=req.params.id;
+// const getsingleBlog=async(req,res)=>{
+//     try{
+//         let id=req.params.id;
+//         let data=await Blog.findById(id)
+//         res.send(data);
+//     }catch(error){
+//         res.send(error.message);
+//     }
+// }
+const getsingleBlog = async (req, res) => {
+    const id = req.params.blogId.replace(':', '');
+    // console.log(id);
+    const data = await Blog.findOne({ _id: id }).populate('user');
+    // populate('User')
+    if (!data) {
+        res.status(404).send({
+            msg: "user not found"
+        })
+    } else {
         res.send(data);
-    }catch(error){
-        res.send(error.message);
     }
 }
 
@@ -66,11 +95,12 @@ const updateBlog=async(req,res)=>{
     if(req.file){
         filename=req.file.filename;
         const oldFileName=blog.img;
+        // console.log(img)
         const filepath = path.join(__dirname, '/../img', oldFileName);
-        fs.unlink(filepath);
+        fs.unlinkSync(filepath);
     }
     if(!blog){
-        return req.status().join({
+        return res.json({
             msg:"blog id not found"
         })
     }
@@ -86,7 +116,7 @@ const updateBlog=async(req,res)=>{
 
     await blog.save();
 
-    res.status().json({
+    res.json({
         msg:"data updated"
     })
 }
@@ -121,5 +151,7 @@ const deleteBlog=async(req,res)=>{
      msg:"Data Removed"
     })
 }
+
+
 
 module.exports={createBlog,updateBlog,deleteBlog,getBlog,getsingleBlog}
